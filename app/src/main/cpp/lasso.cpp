@@ -25,7 +25,7 @@ void *test_var = NULL;
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_github_erfur_lasso_MainActivity_testFunction(JNIEnv *env, jobject thiz) {
+Java_com_github_erfur_lasso_InjectorTestClass_testFunction(JNIEnv *env, jobject thiz) {
     // log
     __android_log_print(ANDROID_LOG_DEBUG, "Lasso", "testFunction");
     // create a new string byte by byte
