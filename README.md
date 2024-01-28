@@ -1,4 +1,4 @@
-![img](assets/logo-small.png)
+![img](assets/banner.png)
 
 # Lasso
 
