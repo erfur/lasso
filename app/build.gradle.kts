@@ -63,7 +63,7 @@ android {
 
 cargo {
     module  = "../linjector-rs"
-    libname = "linjector_rs"
+    libname = "linjector-jni"
     targets = listOf("arm64")
     prebuiltToolchains = true
     pythonCommand = "python3"

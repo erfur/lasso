@@ -3,9 +3,13 @@ name = "linjector-rs"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-name = "linjector_rs"
-crate_type = ["staticlib", "cdylib"]
+[[bin]]
+name = "linjector-rs"
+path = "bin/cmd.rs"
+
+[[bin]]
+name = "linjector-jni"
+path = "bin/jni.rs"
 
 [dependencies]
 android_logger = "0.13.3"
