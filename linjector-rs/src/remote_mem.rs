@@ -3,7 +3,9 @@ use std::fs::{File, OpenOptions};
 
 #[derive(Debug)]
 pub(crate) struct RemoteMem {
+    #[allow(dead_code)]
     pid: u16,
+    #[allow(dead_code)]
     mem_path: String,
     fd: File,
 }

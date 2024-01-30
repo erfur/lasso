@@ -1,6 +1,7 @@
 pub(crate) struct RemoteModule {
     pub name: String,
     pub vm_addr: usize,
+    #[allow(dead_code)]
     pub bytes: Vec<u8>,
 }
 
@@ -49,9 +50,9 @@ impl RemoteModule {
 
     /// This function is not yet fully implemented.
     #[warn(dead_code)]
-    pub fn dlsym_from_mem(&self, symbol_name: &str) -> usize {
+    pub fn _dlsym_from_mem(&self, _symbol_name: &str) -> usize {
         let header = goblin::elf::Elf::parse_header(&self.bytes).unwrap();
-        let elf = goblin::elf::Elf::lazy_parse(header).unwrap();
+        let _elf = goblin::elf::Elf::lazy_parse(header).unwrap();
 
         let ctx = goblin::container::Ctx::new(
             goblin::container::Container::Big,
@@ -94,7 +95,7 @@ impl RemoteModule {
 
         let strtab_addr: usize = dyn_header.info.strtab as usize;
         let strtab_sz: usize = dyn_header.info.strsz as usize;
-        let symtab_addr: usize = dyn_header.info.symtab as usize;
+        let _symtab_addr: usize = dyn_header.info.symtab as usize;
         let delim: u8 = 0;
 
         // for dyn_entry in dyn_header.dyns {
@@ -147,7 +148,7 @@ impl RemoteModule {
         //     ctx
         // ).unwrap();
 
-        let mut symbol_addr: usize = 0;
+        let symbol_addr: usize = 0;
 
         // for sym in symtab.iter() {
         //     let sym_name = strtab.get_at(sym.st_name).unwrap();

@@ -249,7 +249,7 @@ pub fn memfd_dlopen_shellcode(dlopen_addr: usize, jmp_addr: usize, library_data_
 
 #[warn(clippy::unimplemented)]
 pub fn raw_shellcode() -> Vec<u8> {
-    let mut ops = dynasmrt::aarch64::Assembler::new().unwrap();
+    let ops = dynasmrt::aarch64::Assembler::new().unwrap();
 
     ops.finalize().unwrap().to_vec()
 }
