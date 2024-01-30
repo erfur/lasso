@@ -1,6 +1,13 @@
 use backtrace::Backtrace;
 use std::panic;
 
+pub fn set_panic_handler() {
+    panic::set_hook(Box::new(|panic_info| {
+        // Call the custom function to handle the panic
+        handle_panic(panic_info);
+    }));
+}
+
 pub(crate) fn handle_panic(panic_info: &panic::PanicInfo) {
     // You can extract and format the panic information here
     let panic_message = match panic_info.payload().downcast_ref::<&str>() {
