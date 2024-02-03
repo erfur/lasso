@@ -1,15 +1,12 @@
 [package]
-name = "linjector-rs"
+name = "linjector-jni"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "linjector_rs"
+name = "linjector_jni"
 path = "src/lib.rs"
-
-[[bin]]
-name = "linjector-cmd"
-path = "bin/cmd.rs"
+crate_type = ["staticlib", "cdylib"]
 
 [dependencies]
 android_logger = "0.13.3"
@@ -23,3 +20,4 @@ log = "0.4.20"
 nix = { version = "0.27.1", features = ["uio"] }
 pretty-hex = "0.4.0"
 proc-maps = "0.3.2"
+linjector-rs = { path = "../linjector-rs" }

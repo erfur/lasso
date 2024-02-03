@@ -17,7 +17,7 @@ class AppProcessFinderService: RootService(), Handler.Callback {
     private external fun injectCode(pid: Int)
 
     init {
-        System.loadLibrary("linjector_rs")
+        System.loadLibrary("linjector_jni")
     }
 
     companion object {

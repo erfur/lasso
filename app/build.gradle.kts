@@ -15,7 +15,7 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            keepDebugSymbols += "**/liblinjector_rs.so"
+            keepDebugSymbols += "**/liblinjector_jni.so"
         }
     }
 
@@ -62,8 +62,8 @@ android {
 }
 
 cargo {
-    module  = "../linjector-rs"
-    libname = "linjector-jni"
+    module  = "../linjector-jni"
+    libname = "linjector_jni"
     targets = listOf("arm64")
     prebuiltToolchains = true
     pythonCommand = "python3"
