@@ -12,17 +12,30 @@ import android.util.Log
 class InjectorServiceConnection : ServiceConnection, Handler.Callback {
 
     private lateinit var messenger: Messenger
+    private var bound: Boolean = false
+
     // dictionary of callbacks
-    private val callbacks = mutableMapOf<String, Application.PidFoundCallback>()
+    private val callbacks = mutableMapOf<String, (Int) -> Int>()
 
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         Log.d("AppProcessFinderConnection", "onServiceConnected")
         messenger = Messenger(service)
+        bound = true
     }
 
-    fun findProcessId(packageName: String, callback: Application.PidFoundCallback) {
+    override fun onServiceDisconnected(name: ComponentName?) {
+        Log.d("AppProcessFinderConnection", "onServiceDisconnected")
+        bound = false
+    }
+
+    fun findProcessId(packageName: String, callback: (Int) -> Int) {
+        if (!bound) {
+            Log.d("AppProcessFinderConnection", "not bound")
+            return
+        }
+
         Log.d("AppProcessFinderConnection", "findProcessId")
-        val msg = Message.obtain(null, AppProcessFinderService.FIND_PID)
+        val msg = Message.obtain(null, InjectorService.FIND_PID)
         msg.data.putString("packageName", packageName)
 
         // set up a reply messenger
@@ -34,38 +47,33 @@ class InjectorServiceConnection : ServiceConnection, Handler.Callback {
         messenger.send(msg)
     }
 
-    fun getProcessMaps(pid: Int) {
-        Log.d("AppProcessFinderConnection", "getProcessMaps")
-        val msg = Message.obtain(null, AppProcessFinderService.GET_MAPS)
-        msg.data.putInt("pid", pid)
+    fun injectCode(pid: Int) {
+        if (!bound) {
+            Log.d("AppProcessFinderConnection", "not bound")
+            return
+        }
 
-        // set up a reply messenger
-        val replyHandler = Handler(Looper.getMainLooper(), this)
-        val replyMessenger = Messenger(replyHandler)
-        msg.replyTo = replyMessenger
-
-        messenger.send(msg)
-    }
-
-    fun sendInjectCodeMessage(pid: Int) {
         Log.d("AppProcessFinderConnection", "injectCode")
-        val msg = Message.obtain(null, AppProcessFinderService.INJECT_CODE)
+        val msg = Message.obtain(null, InjectorService.INJECT_CODE)
         msg.data.putInt("pid", pid)
         messenger.send(msg)
-    }
-
-    override fun onServiceDisconnected(name: ComponentName?) {
-        Log.d("AppProcessFinderConnection", "onServiceDisconnected")
     }
 
     override fun handleMessage(msg: Message): Boolean {
+        if (!bound) {
+            Log.d("AppProcessFinderConnection", "not bound")
+            return false
+        }
+
         Log.d("AppProcessFinderConnection", "handleMessage")
         when (msg.what) {
-            AppProcessFinderService.FIND_PID_REPLY -> {
+            InjectorService.FIND_PID_REPLY -> {
                 Log.d("AppProcessFinderConnection", "FIND_PID_REPLY")
                 val pid = msg.data.getInt("pid")
                 val packageName = msg.data.getString("packageName")!!
-                callbacks[packageName]?.onPidFound(pid)
+                callbacks[packageName]?.let {
+                    it(pid)
+                }
             }
         }
         return true
