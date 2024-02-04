@@ -1,27 +1,35 @@
 package com.github.erfur.lasso
 
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 
-data class Application(val name: String, val packageName: String, val finder: AppProcessFinderConnection) {
+data class Application(val packageName: String, val name: String, val finder: InjectorServiceConnection) {
 
-    override fun toString(): String {
-        return "Application(name='$name', packageName='$packageName')"
-    }
+    private var _pid: MutableLiveData<Int> = MutableLiveData(-1)
+    val pid: MutableLiveData<Int>
+        get() = _pid
 
-    fun getPid(callback: PidFoundCallback?) {
-        if (callback is PidFoundCallback) {
-            finder.findProcessId(packageName, callback)
-        } else {
-            finder.findProcessId(packageName, object: PidFoundCallback() {
-                override fun onPidFound(pid: Int) {
-                    Log.i("Application", "injecting code into pid: $pid")
-                    finder.sendInjectCodeMessage(pid)
-                }
-            })
+    fun setPid(pid: Int) {
+        _pid.value?.let {
+            _pid.value = pid
         }
     }
 
-    open class PidFoundCallback() {
-        open fun onPidFound(pid: Int) {}
+    fun triggerUpdatePid() {
+        _pid.value?.let {
+            finder.findProcessId(packageName) { pid: Int ->
+                setPid(pid)
+                Log.i("Application", "pid found: $pid")
+            }
+        }
+    }
+
+    fun triggerInjection() {
+        Log.i("Application", "injecting code into pid: $pid")
+        finder.injectCode(_pid.value!!)
+    }
+
+    override fun toString(): String {
+        return "Application(name='$name', packageName='$packageName', pid=$pid)"
     }
 }

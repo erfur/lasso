@@ -8,14 +8,28 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class ApplicationAdapter(private val apps: List<Application>): RecyclerView.Adapter<ApplicationAdapter.ViewHolder>() {
+
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val applicationIcon: ImageView = itemView.findViewById(R.id.imageView2)
         val applicationName: TextView = itemView.findViewById(R.id.textView)
         val applicationPackageName: TextView = itemView.findViewById(R.id.textView2)
+        val applicationPid: TextView = itemView.findViewById(R.id.textView3)
 
         init {
             itemView.setOnClickListener {
-                apps[absoluteAdapterPosition].getPid(null)
+                apps[adapterPosition].triggerInjection()
+            }
+        }
+
+        fun bind(application: Application) {
+            applicationIcon.setImageDrawable(itemView.context.packageManager.getApplicationIcon(application.packageName))
+            applicationName.text = application.name
+            applicationPackageName.text = application.packageName
+            applicationPid.text = ""
+
+            application.pid.observe(itemView.context as MainActivity) {
+                if (it != -1)
+                    applicationPid.text = it.toString()
             }
         }
     }
@@ -28,9 +42,6 @@ class ApplicationAdapter(private val apps: List<Application>): RecyclerView.Adap
     override fun getItemCount() = apps.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val application = apps[position]
-        holder.applicationIcon.setImageDrawable(holder.itemView.context.packageManager.getApplicationIcon(application.packageName))
-        holder.applicationName.text = application.name
-        holder.applicationPackageName.text = application.packageName
+        holder.bind(apps.get(position))
     }
 }
