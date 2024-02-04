@@ -12,7 +12,7 @@ use linjector_rs::utils::set_panic_handler;
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn Java_com_github_erfur_lasso_AppProcessFinderService_initLasso<'local>(
+pub extern "system" fn Java_com_github_erfur_lasso_InjectorService_initLasso<'local>(
     mut _env: JNIEnv<'local>,
     _class: JClass<'local>,
 ) {
@@ -25,7 +25,7 @@ pub extern "system" fn Java_com_github_erfur_lasso_AppProcessFinderService_initL
 
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "system" fn Java_com_github_erfur_lasso_AppProcessFinderService_injectCode<'local>(
+pub extern "system" fn Java_com_github_erfur_lasso_InjectorService_injectCode<'local>(
     mut _env: JNIEnv<'local>,
     _class: JClass<'local>,
     pid: jint,

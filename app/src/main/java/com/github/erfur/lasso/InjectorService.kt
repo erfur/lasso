@@ -10,7 +10,7 @@ import android.os.Messenger
 import android.util.Log
 import com.topjohnwu.superuser.ipc.RootService
 
-class AppProcessFinderService: RootService(), Handler.Callback {
+class InjectorService: RootService(), Handler.Callback {
 
     private external fun initLasso()
     private external fun getMaps(pid: Int)

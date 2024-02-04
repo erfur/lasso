@@ -9,7 +9,7 @@ import android.os.Message
 import android.os.Messenger
 import android.util.Log
 
-class AppProcessFinderConnection: ServiceConnection, Handler.Callback {
+class InjectorServiceConnection : ServiceConnection, Handler.Callback {
 
     private lateinit var messenger: Messenger
     // dictionary of callbacks
