@@ -9,12 +9,16 @@ import android.os.Message
 import android.os.Messenger
 import android.util.Log
 import com.topjohnwu.superuser.ipc.RootService
+import com.topjohnwu.superuser.nio.ExtendedFile
+import com.topjohnwu.superuser.nio.FileSystemManager
 
 class InjectorService: RootService(), Handler.Callback {
 
     private external fun initLasso()
     private external fun getMaps(pid: Int)
-    private external fun injectCode(pid: Int)
+    private external fun injectCode(pid: Int, filePath: String)
+
+    val localFs = FileSystemManager.getLocal()
 
     init {
         System.loadLibrary("linjector_jni")
@@ -78,7 +82,16 @@ class InjectorService: RootService(), Handler.Callback {
             INJECT_CODE -> {
                 Log.d("AppProcessFinderService", "INJECT_CODE")
                 val pid = msg.data.getInt("pid")
-                injectCode(pid)
+                val filePath = msg.data.getString("file_path")!!
+
+                val file = localFs.getFile(filePath)
+                if (!file.exists()) {
+                    Log.d("AppProcessFinderService", "file does not exist: $filePath")
+                    return false
+                }
+
+                Log.d("AppProcessFinderService", "injecting code into pid: $pid from file: $filePath")
+                injectCode(pid, filePath)
                 true
             }
 

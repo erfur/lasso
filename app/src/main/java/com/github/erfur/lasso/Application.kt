@@ -24,9 +24,16 @@ data class Application(val packageName: String, val name: String, val finder: In
         }
     }
 
-    fun triggerInjection() {
-        Log.i("Application", "injecting code into pid: $pid")
-        finder.injectCode(_pid.value!!)
+    fun triggerInjection(file_path: String) {
+        val pid = _pid.value!!
+
+        if (pid == -1) {
+            Log.e("Application", "pid is not found")
+            return
+        }
+
+        Log.i("Application", "injecting code ($file_path) into pid: $pid")
+        finder.injectCode(pid, file_path)
     }
 
     override fun toString(): String {

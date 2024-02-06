@@ -47,7 +47,7 @@ class InjectorServiceConnection : ServiceConnection, Handler.Callback {
         messenger.send(msg)
     }
 
-    fun injectCode(pid: Int) {
+    fun injectCode(pid: Int, filePath: String) {
         if (!bound) {
             Log.d("AppProcessFinderConnection", "not bound")
             return
@@ -56,6 +56,7 @@ class InjectorServiceConnection : ServiceConnection, Handler.Callback {
         Log.d("AppProcessFinderConnection", "injectCode")
         val msg = Message.obtain(null, InjectorService.INJECT_CODE)
         msg.data.putInt("pid", pid)
+        msg.data.putString("file_path", filePath)
         messenger.send(msg)
     }
 

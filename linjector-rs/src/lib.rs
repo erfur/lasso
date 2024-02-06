@@ -1,3 +1,5 @@
+use crate::utils::hexdump_file;
+
 mod remote_mem;
 mod remote_module;
 mod remote_proc;
@@ -8,7 +10,9 @@ pub mod utils;
 extern crate log;
 extern crate android_logger;
 
-pub fn inject_code_to_pid(pid: i32) {
+pub fn inject_code_to_pid(pid: i32, file_path: String) {
+    hexdump_file(file_path.as_str());
+
     let proc = remote_proc::RemoteProc::new(pid as u16);
     let libc = proc.get_module("libc.so");
     let libdl = proc.get_module("libdl.so");
@@ -31,7 +35,7 @@ pub fn inject_code_to_pid(pid: i32) {
 
     let second_stage = shellcode::raw_dlopen_shellcode(
         dlopen_sym,
-        "/data/local/tmp/frida-gadget.so".to_string(),
+        file_path,
         malloc_sym,
     );
 

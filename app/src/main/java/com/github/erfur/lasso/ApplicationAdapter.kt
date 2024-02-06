@@ -7,19 +7,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class ApplicationAdapter(private val apps: List<Application>): RecyclerView.Adapter<ApplicationAdapter.ViewHolder>() {
+class ApplicationAdapter(private val apps: List<Application>, private val injectionCallback: (Application, MainActivity.ClickAction) -> Unit): RecyclerView.Adapter<ApplicationAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val applicationIcon: ImageView = itemView.findViewById(R.id.imageView2)
         val applicationName: TextView = itemView.findViewById(R.id.textView)
         val applicationPackageName: TextView = itemView.findViewById(R.id.textView2)
         val applicationPid: TextView = itemView.findViewById(R.id.textView3)
-
-        init {
-            itemView.setOnClickListener {
-                apps[adapterPosition].triggerInjection()
-            }
-        }
 
         fun bind(application: Application) {
             applicationIcon.setImageDrawable(itemView.context.packageManager.getApplicationIcon(application.packageName))
@@ -28,8 +22,21 @@ class ApplicationAdapter(private val apps: List<Application>): RecyclerView.Adap
             applicationPid.text = ""
 
             application.pid.observe(itemView.context as MainActivity) {
-                if (it != -1)
-                    applicationPid.text = it.toString()
+                if (it != -1) {
+                    applicationPid.text = "PID: ${it.toString()}"
+                } else {
+                    applicationPid.text = ""
+                }
+            }
+
+            itemView.setOnClickListener {
+                injectionCallback(application, MainActivity.ClickAction.INJECT_CUSTOM)
+            }
+
+            itemView.isLongClickable = true
+            itemView.setOnLongClickListener {
+                injectionCallback(application, MainActivity.ClickAction.INJECT_FRIDA)
+                true
             }
         }
     }

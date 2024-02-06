@@ -3,7 +3,7 @@ extern crate log;
 extern crate android_logger;
 
 use android_logger::Config;
-use jni::objects::JClass;
+use jni::objects::{JClass, JString};
 use jni::sys::jint;
 use jni::JNIEnv;
 use log::LevelFilter;
@@ -29,11 +29,15 @@ pub extern "system" fn Java_com_github_erfur_lasso_InjectorService_injectCode<'l
     mut _env: JNIEnv<'local>,
     _class: JClass<'local>,
     pid: jint,
+    file_path: JString<'local>,
 ) {
     let pid: i32 = pid as i32;
     debug!("pid: {}", pid);
 
-    inject_code_to_pid(pid);
+    let file_path_str: String = _env.get_string(&file_path).unwrap().into();
+    debug!("file_path: {}", file_path_str);
+
+    inject_code_to_pid(pid, file_path_str);
 }
 
 fn main() {

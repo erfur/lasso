@@ -16,5 +16,5 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    linjector_rs::inject_code_to_pid(args.pid as i32);
+    linjector_rs::inject_code_to_pid(args.pid as i32, args.lib_path);
 }
