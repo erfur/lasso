@@ -109,6 +109,9 @@ pub fn raw_dlopen_shellcode(dlopen_addr: usize, dlopen_path: String, jmp_addr: u
         ; ldr x8, ->dlopen
         ; blr x8
 
+        // if dlopen fails, crash
+        ; cbz x0, ->crash
+
         // load the original args
         ; ldp x0, x1, [sp, #0x0]
         ; ldp x2, x3, [sp, #0x10]
@@ -132,9 +135,13 @@ pub fn raw_dlopen_shellcode(dlopen_addr: usize, dlopen_path: String, jmp_addr: u
         ; ldr x8, ->oldfun
         ; br x8
 
+        ; ->crash:
+        ; brk #0x1
+
         ; .align 4
         ; ->dlopen_path:
         ; .bytes dlopen_path_bytes
+        ; .bytes [0x0]
 
         ; .align 4
         ; ->dlopen_flags:
