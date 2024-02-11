@@ -7,7 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class ApplicationAdapter(private val apps: List<Application>, private val injectionCallback: (Application, MainActivity.ClickAction) -> Unit): RecyclerView.Adapter<ApplicationAdapter.ViewHolder>() {
+class ApplicationAdapter(private val apps: List<Application>, private val injectionCallback: (Application) -> Unit): RecyclerView.Adapter<ApplicationAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         val applicationIcon: ImageView = itemView.findViewById(R.id.imageView2)
@@ -30,13 +30,7 @@ class ApplicationAdapter(private val apps: List<Application>, private val inject
             }
 
             itemView.setOnClickListener {
-                injectionCallback(application, MainActivity.ClickAction.INJECT_CUSTOM)
-            }
-
-            itemView.isLongClickable = true
-            itemView.setOnLongClickListener {
-                injectionCallback(application, MainActivity.ClickAction.INJECT_FRIDA)
-                true
+                injectionCallback(application)
             }
         }
     }

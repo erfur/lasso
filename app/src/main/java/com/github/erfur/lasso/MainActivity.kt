@@ -28,14 +28,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var apps: List<Application>
     private lateinit var listView: RecyclerView
     private lateinit var finder: InjectorServiceConnection
+    private lateinit var selectedApp: Application
 
     private fun refreshInstalledApps(){
         installedApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-    }
-
-    // enum
-    enum class ClickAction {
-        INJECT_CUSTOM, INJECT_FRIDA
     }
 
     private fun refreshAppsList(){
@@ -46,31 +42,12 @@ class MainActivity : AppCompatActivity() {
         }.sortedBy { it.name }
 
         listView.adapter = ApplicationAdapter(apps) {
-            application, action ->
-            when (action) {
-                ClickAction.INJECT_CUSTOM -> select_file(application)
-                ClickAction.INJECT_FRIDA -> application.triggerInjection("/data/local/tmp/frida-gadget.so")
-            }
+            selectedApp = it
+            selectFile()
         }
     }
 
-    private fun refreshPids() {
-        apps.map {
-            it.triggerUpdatePid()
-        }
-    }
-
-    private val fileRequestCode = 1 // A unique request code to identify your file selection request
-    private val fileCallback = { application: Application, file_path: String ->
-        application.triggerInjection(file_path)
-    }
-    private lateinit var targetApplication: Application
-
-    private fun select_file(application: Application) {
-        targetApplication = application
-        // choose a file from external storage
-        // only openable files are shown
-        // enable multiple files selection
+    fun selectFile() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "*/*"
@@ -78,9 +55,19 @@ class MainActivity : AppCompatActivity() {
             addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         }
 
-        startActivityForResult(intent, fileRequestCode)
+        startActivityForResult(intent, 1)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            val pfd = FileDescriptorUtil.getFileDescriptor(this, data?.data!!)!!
+            val file = createTempFile("inject", ".so", cacheDir)
+            FileInputStream(pfd.fileDescriptor).copyTo(file.outputStream())
+
+            selectedApp.triggerInjection(file.absolutePath)
+        }
+    }
 
     object FileDescriptorUtil {
         fun getFileDescriptor(context: Context, uri: Uri?): ParcelFileDescriptor? {
@@ -98,23 +85,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == fileRequestCode && resultCode == RESULT_OK) {
-            // get the full path of the file
-            val filePath = data?.data!!
-
-            val pfd = FileDescriptorUtil.getFileDescriptor(this, filePath)!!
-
-            // copy file to /data/local/tmp
-            val file = createTempFile("lasso", ".so", cacheDir)
-            FileInputStream(pfd.fileDescriptor).copyTo(file.outputStream())
-
-            fileCallback(targetApplication, file.absolutePath)
+    private fun refreshPids() {
+        apps.map {
+            it.triggerUpdatePid()
         }
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
