@@ -66,3 +66,52 @@ pub fn hexdump_file(file_path: &str) {
     file.read_exact(&mut buffer).unwrap();
     hexdump(&buffer);
 }
+
+pub fn move_file_to_tmp(file_path: &str) -> String {
+    let tmp_file_path = format!("/data/local/tmp/{}", std::path::Path::new(file_path).file_name().unwrap().to_str().unwrap());
+    info!("Moving file to {}", tmp_file_path);
+    match std::fs::copy(file_path, &tmp_file_path) {
+        Ok(_) => {
+            fix_file_context(&tmp_file_path);
+        }
+        Err(e) => {
+            error!("Error moving file: {}", e);
+        }
+    }
+
+    tmp_file_path
+}
+
+fn fix_file_context(file_path: &str) {
+    info!("Fixing file context for {}", file_path);
+    match std::process::Command::new("chcon")
+        .arg("u:object_r:apk_data_file:s0")
+        .arg(file_path)
+        .output()
+    {
+        Ok(output) => {
+            if !output.status.success() {
+                error!("Error running chcon: {}", String::from_utf8_lossy(&output.stderr));
+            }
+        }
+        Err(e) => {
+            error!("Error running chcon: {}", e);
+        }
+    }
+
+    // add executable permission to file
+    match std::process::Command::new("chmod")
+        .arg("+r")
+        .arg(file_path)
+        .output()
+    {
+        Ok(output) => {
+            if !output.status.success() {
+                error!("Error running chmod: {}", String::from_utf8_lossy(&output.stderr));
+            }
+        }
+        Err(e) => {
+            error!("Error running chmod: {}", e);
+        }
+    }
+}

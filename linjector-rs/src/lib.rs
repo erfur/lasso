@@ -1,5 +1,3 @@
-use crate::utils::hexdump_file;
-
 mod remote_mem;
 mod remote_module;
 mod remote_proc;
@@ -11,7 +9,8 @@ extern crate log;
 extern crate android_logger;
 
 pub fn inject_code_to_pid(pid: i32, file_path: String) {
-    hexdump_file(file_path.as_str());
+    let file_path = utils::move_file_to_tmp(file_path.as_str());
+    utils::hexdump_file(file_path.as_str());
 
     let proc = remote_proc::RemoteProc::new(pid as u16);
     let libc = proc.get_module("libc.so");
@@ -75,5 +74,5 @@ pub fn inject_code_to_pid(pid: i32, file_path: String) {
     info!("overwrite new map");
     proc.rm.write_code(new_map as usize, &second_stage, 1);
 
-    info!("injectCode");
+    info!("injectCode done.");
 }
