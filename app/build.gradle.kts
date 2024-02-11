@@ -110,5 +110,5 @@ dependencies {
     // Optional: APIs for creating root services. Depends on ":core"
     implementation("com.github.topjohnwu.libsu:service:${libsuVersion}")
     // Optional: Provides remote file system support
-    implementation("com.github.topjohnwu.libsu:nio:${libsuVersion}")
+    // implementation("com.github.topjohnwu.libsu:nio:${libsuVersion}")
 }

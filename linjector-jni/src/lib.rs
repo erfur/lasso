@@ -39,7 +39,3 @@ pub extern "system" fn Java_com_github_erfur_lasso_InjectorService_injectCode<'l
 
     inject_code_to_pid(pid, file_path_str);
 }
-
-fn main() {
-    ()
-}

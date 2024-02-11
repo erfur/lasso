@@ -9,13 +9,11 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toFile
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.erfur.lasso.databinding.ActivityMainBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.topjohnwu.superuser.ipc.RootService
-import java.io.File
 import java.io.File.createTempFile
 import java.io.FileInputStream
 import java.io.FileNotFoundException
