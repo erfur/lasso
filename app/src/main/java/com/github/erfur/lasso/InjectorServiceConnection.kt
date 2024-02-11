@@ -47,6 +47,18 @@ class InjectorServiceConnection : ServiceConnection, Handler.Callback {
         messenger.send(msg)
     }
 
+    fun focusApp(packageName: String) {
+        if (!bound) {
+            Log.d("AppProcessFinderConnection", "not bound")
+            return
+        }
+
+        Log.d("AppProcessFinderConnection", "focusApp")
+        val msg = Message.obtain(null, InjectorService.FOCUS_APP)
+        msg.data.putString("package_name", packageName)
+        messenger.send(msg)
+    }
+
     fun injectCode(pid: Int, filePath: String) {
         if (!bound) {
             Log.d("AppProcessFinderConnection", "not bound")

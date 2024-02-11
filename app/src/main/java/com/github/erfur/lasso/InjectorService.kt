@@ -25,7 +25,8 @@ class InjectorService: RootService(), Handler.Callback {
         const val FIND_PID_REPLY: Int = 1
         const val GET_MAPS: Int = 2
         const val GET_MAPS_REPLY: Int = 3
-        const val INJECT_CODE: Int = 4
+        const val FOCUS_APP: Int = 4
+        const val INJECT_CODE: Int = 5
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -72,6 +73,16 @@ class InjectorService: RootService(), Handler.Callback {
                 getMaps(pid)
                 reply.data.putInt("maps", 31337)
                 msg.replyTo.send(reply)
+                true
+            }
+
+            FOCUS_APP -> {
+                Log.d("AppProcessFinderService", "FOCUS_APP")
+                val packageName = msg.data.getString("package_name")!!
+
+                // bring the application forward
+                Log.d("AppProcessFinderService", "bringing application to the foreground")
+                Runtime.getRuntime().exec(arrayOf("monkey", "-p", packageName, "1"))
                 true
             }
 

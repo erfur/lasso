@@ -28,9 +28,12 @@ data class Application(val packageName: String, val name: String, val finder: In
         val pid = _pid.value!!
 
         if (pid == -1) {
-            Log.e("Application", "pid is not found")
-            return
+            Log.e("Application", "pid is not found, spawning the app...")
         }
+
+        finder.focusApp(packageName)
+
+        triggerUpdatePid()
 
         Log.i("Application", "injecting code ($file_path) into pid: $pid")
         finder.injectCode(pid, file_path)
