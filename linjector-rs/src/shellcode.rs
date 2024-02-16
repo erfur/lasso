@@ -1,11 +1,13 @@
 use dynasmrt::{dynasm, DynasmApi, DynasmLabelApi};
 
-pub fn main_shellcode(var_addr: usize, alloc_len: usize) -> Vec<u8> {
+use crate::InjectionError;
+
+pub fn main_shellcode(var_addr: usize, alloc_len: usize) -> Result<Vec<u8>, InjectionError> {
     let mut ops = dynasmrt::aarch64::Assembler::new().unwrap();
 
     dynasm!(ops
         ; .arch aarch64
-        
+
         ; ->start:
         // check if the bit is set
         ; ldr x6, ->var_addr
@@ -64,7 +66,7 @@ pub fn main_shellcode(var_addr: usize, alloc_len: usize) -> Vec<u8> {
 
         // turn off the bit
         ; eor x0, x0, #0x1
-        
+
         // jump to the new map
         ; br x0
 
@@ -85,10 +87,17 @@ pub fn main_shellcode(var_addr: usize, alloc_len: usize) -> Vec<u8> {
         ; b ->self_jmp
     );
 
-    ops.finalize().unwrap().to_vec()
+    match ops.finalize() {
+        Ok(shellcode) => Ok(shellcode.to_vec()),
+        Err(_) => Err(InjectionError::ShellcodeError),
+    }
 }
 
-pub fn raw_dlopen_shellcode(dlopen_addr: usize, dlopen_path: String, jmp_addr: usize) -> Vec<u8> {
+pub fn raw_dlopen_shellcode(
+    dlopen_addr: usize,
+    dlopen_path: String,
+    jmp_addr: usize,
+) -> Result<Vec<u8>, InjectionError> {
     let mut ops = dynasmrt::aarch64::Assembler::new().unwrap();
 
     // dlopen flags RTLD_NOW
@@ -156,11 +165,18 @@ pub fn raw_dlopen_shellcode(dlopen_addr: usize, dlopen_path: String, jmp_addr: u
         ; .qword jmp_addr as _
     );
 
-    ops.finalize().unwrap().to_vec()
+    match ops.finalize() {
+        Ok(shellcode) => Ok(shellcode.to_vec()),
+        Err(_) => Err(InjectionError::ShellcodeError),
+    }
 }
 
-#[warn(clippy::unimplemented)]
-pub fn memfd_dlopen_shellcode(dlopen_addr: usize, jmp_addr: usize, library_data_bytes: &Vec<u8>, sprintf_addr: usize) -> Vec<u8> {
+pub fn memfd_dlopen_shellcode(
+    dlopen_addr: usize,
+    jmp_addr: usize,
+    library_data_bytes: &Vec<u8>,
+    sprintf_addr: usize,
+) -> Result<Vec<u8>, InjectionError> {
     let mut ops = dynasmrt::aarch64::Assembler::new().unwrap();
 
     // dlopen flags RTLD_NOW
@@ -251,60 +267,17 @@ pub fn memfd_dlopen_shellcode(dlopen_addr: usize, jmp_addr: usize, library_data_
         ; .bytes library_data_bytes
     );
 
-    ops.finalize().unwrap().to_vec()
+    match ops.finalize() {
+        Ok(shellcode) => Ok(shellcode.to_vec()),
+        Err(_) => Err(InjectionError::ShellcodeError),
+    }
 }
 
-#[warn(clippy::unimplemented)]
-pub fn raw_shellcode() -> Vec<u8> {
-    let ops = dynasmrt::aarch64::Assembler::new().unwrap();
-
-    ops.finalize().unwrap().to_vec()
+fn _raw_shellcode() -> Result<Vec<u8>, InjectionError> {
+    unimplemented!()
 }
 
-pub fn test_shellcode() -> Vec<u8> {
-    let mut ops = dynasmrt::aarch64::Assembler::new().unwrap();
-
-    let hello = "icetea".as_bytes();
-    let addr: Vec<u8> = vec![0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41];
-
-    dynasm!(ops
-        ; .arch aarch64
-        ; ldr x8, ->start
-        ; ldr x9, ->target
-        ; br x9
-        ; .align 4
-        ; ->start:
-        ; .bytes hello
-        ; .align 4
-        ; ->target:
-        ; .bytes addr
-    );
-
-    ops.finalize().unwrap().to_vec()
-}
-
-pub fn test_shellcode2() -> Vec<u8> {
-    let mut ops = dynasmrt::aarch64::Assembler::new().unwrap();
-
-    let hello = "icetea".as_bytes();
-    let addr: Vec<u8> = vec![0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41];
-
-    dynasm!(ops
-        ; .arch aarch64
-        ; adr x0, ->target
-        ; ret
-        ; .align 4
-        ; ->start:
-        ; .bytes hello
-        ; .align 4
-        ; ->target:
-        ; .bytes addr
-    );
-
-    ops.finalize().unwrap().to_vec()
-}
-
-pub fn self_jmp() -> Vec<u8> {
+pub(crate) fn self_jmp() -> Result<Vec<u8>, InjectionError> {
     let mut ops = dynasmrt::aarch64::Assembler::new().unwrap();
 
     dynasm!(ops
@@ -312,5 +285,8 @@ pub fn self_jmp() -> Vec<u8> {
         ; b ->self_jmp
     );
 
-    ops.finalize().unwrap().to_vec()
+    match ops.finalize() {
+        Ok(shellcode) => Ok(shellcode.to_vec()),
+        Err(_) => Err(InjectionError::ShellcodeError),
+    }
 }

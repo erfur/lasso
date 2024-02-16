@@ -1,58 +1,58 @@
 use nix::sys::uio::{pread, pwrite};
 use std::fs::{File, OpenOptions};
 
+use crate::InjectionError;
+
 #[derive(Debug)]
 pub(crate) struct RemoteMem {
-    #[allow(dead_code)]
-    pid: u16,
-    #[allow(dead_code)]
-    mem_path: String,
     fd: File,
 }
 
 impl RemoteMem {
-    pub fn new(pid: u16) -> Self {
+    pub fn new(pid: i32) -> Result<Self, InjectionError> {
         let mem_path: String = format!("/proc/{}/mem", pid);
         // open file in read-write mode
         let fd = OpenOptions::new()
             .read(true)
             .write(true)
             .open(&mem_path)
-            .unwrap();
-        Self { pid, mem_path, fd }
+            .map_err(|_| InjectionError::RemoteMemoryError)?;
+
+        Ok(Self { fd })
     }
 
-    // fn open_largefile(&mut self) {
-    //     let mode = (libc::O_RDWR | libc::O_LARGEFILE) as i32;
-    //     let mut fd = OpenOptions::new().mode(mode).open();
-    // }
-
-    pub fn read_mem(&self, addr: usize, len: usize) -> Vec<u8> {
+    pub fn read_mem(&self, addr: usize, len: usize) -> Result<Vec<u8>, InjectionError> {
         let mut buf = vec![0; len];
-        self.read_mem_vec(addr, &mut buf);
-        return buf;
+        self.read_mem_vec(addr, &mut buf)?;
+        Ok(buf)
     }
 
-    pub fn read_mem_vec(&self, addr: usize, buf: &mut Vec<u8>) {
-        pread(&self.fd, buf, addr as i64).unwrap();
+    pub fn read_mem_vec(&self, addr: usize, buf: &mut Vec<u8>) -> Result<(), InjectionError> {
+        pread(&self.fd, buf, addr as i64).map_err(|_| InjectionError::RemoteMemoryError)?;
+        Ok(())
     }
 
-    pub fn write_mem(&self, addr: usize, buf: &Vec<u8>) {
+    pub fn write_mem(&self, addr: usize, buf: &Vec<u8>) -> Result<(), InjectionError> {
         match pwrite(&self.fd, &buf, addr as i64) {
-            Ok(_) => {}
+            Ok(_) => {
+                Ok(())
+            }
             Err(e) => {
                 error!("error while writing into remote memory: {:?}", e);
+                return Err(InjectionError::RemoteMemoryError);
             }
         }
     }
 
     /// Write code into remote memory, leaving the first `skip` instructions to last.
-    pub fn write_code(&self, addr: usize, buf: &Vec<u8>, skip: usize) {
-        let skip_offset = skip*4;
-        match pwrite(&self.fd, &buf[skip_offset..], (addr+skip_offset) as i64) {
+    /// This is (hopefully) useful when overwriting code that is currently being executed.
+    pub fn write_code(&self, addr: usize, buf: &Vec<u8>, skip: usize) -> Result<(), InjectionError> {
+        let skip_offset = skip * 4;
+        match pwrite(&self.fd, &buf[skip_offset..], (addr + skip_offset) as i64) {
             Ok(_) => {}
             Err(e) => {
                 error!("error while writing into remote memory: {:?}", e);
+                return Err(InjectionError::RemoteMemoryError);
             }
         }
 
@@ -60,8 +60,11 @@ impl RemoteMem {
             Ok(_) => {}
             Err(e) => {
                 error!("error while writing into remote memory: {:?}", e);
+                return Err(InjectionError::RemoteMemoryError);
             }
         }
+
+        Ok(())
     }
 }
 
@@ -74,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_read_mem() {
-        let mut remote_mem = RemoteMem::new(std::process::id() as u16);
+        let remote_mem = RemoteMem::new(std::process::id() as i32).unwrap();
         let buf = remote_mem.read_mem(0x7f7f7f7f7f7f, 0x10);
         println!("{:?}", buf);
     }
