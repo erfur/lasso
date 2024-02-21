@@ -15,7 +15,7 @@ class InjectorServiceConnection : ServiceConnection, Handler.Callback {
     private var bound: Boolean = false
 
     // dictionary of callbacks
-    private val callbacks = mutableMapOf<String, (Int) -> Int>()
+    private val callbacks = mutableMapOf<String, (Int) -> Unit>()
 
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         Log.d("AppProcessFinderConnection", "onServiceConnected")
@@ -28,7 +28,7 @@ class InjectorServiceConnection : ServiceConnection, Handler.Callback {
         bound = false
     }
 
-    fun findProcessId(packageName: String, callback: (Int) -> Int) {
+    fun findProcessId(packageName: String, callback: (Int) -> Unit) {
         if (!bound) {
             Log.d("AppProcessFinderConnection", "not bound")
             return

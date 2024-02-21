@@ -18,8 +18,8 @@ data class Application(val packageName: String, val name: String, val finder: In
     fun triggerUpdatePid() {
         _pid.value?.let {
             finder.findProcessId(packageName) { pid: Int ->
-                setPid(pid)
                 Log.i("Application", "pid found: $pid")
+                setPid(pid)
             }
         }
     }
@@ -33,10 +33,15 @@ data class Application(val packageName: String, val name: String, val finder: In
 
         finder.focusApp(packageName)
 
-        triggerUpdatePid()
+        _pid.value?.let {
+            finder.findProcessId(packageName) { pid: Int ->
+                Log.i("Application", "pid found: $pid")
+                setPid(pid)
 
-        Log.i("Application", "injecting code ($file_path) into pid: $pid")
-        finder.injectCode(pid, file_path)
+                Log.i("Application", "injecting code ($file_path) into pid: $pid")
+                finder.injectCode(pid, file_path)
+            }
+        }
     }
 
     override fun toString(): String {
