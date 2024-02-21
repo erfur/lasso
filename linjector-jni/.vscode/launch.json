@@ -1,0 +1,37 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug (lldb-server)",
+            "type": "lldb",
+            "request": "attach",
+            "program": "${workspaceFolder}/target/aarch64-linux-android/debug/liblinjector_rs.so",
+            "processCreateCommands": [
+                "platform select remote-android",
+                "platform connect connect://localhost:5039",
+                // "settings set target.inherit-env false",
+                // "target create ${workspaceFolder}/target/aarch64-linux-android/debug/liblinjector_rs.so",
+                // "target modules load ${workspaceFolder}/target/aarch64-linux-android/debug/liblinjector_rs.so",
+                "process attach --pid ${input:target}",
+            ],
+            // "pid": "${input:target}",
+            "stopOnEntry": true,
+            "breakpointMode": "path",
+        },
+
+    ],
+
+    "inputs": [
+        {
+            "id": "target",
+            "type": "command",
+            "command": "shellCommand.execute",
+            "args": {
+                "cwd": "${workspaceFolder}",
+                "command": "./app.sh start",
+            },
+        }]
+}
