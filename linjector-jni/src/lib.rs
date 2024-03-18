@@ -7,7 +7,6 @@ use backtrace::Backtrace;
 use jni::objects::{JClass, JString};
 use jni::sys::jint;
 use jni::JNIEnv;
-use linjector_rs::inject_code_to_pid;
 use log::LevelFilter;
 use std::panic;
 
@@ -18,7 +17,7 @@ fn set_panic_handler() {
 }
 
 fn handle_panic(panic_info: &panic::PanicInfo) {
-    error!("Panic occurred: {}", panic_info.message().unwrap());
+    error!("Panic occurred: {}", panic_info.to_string());
 
     // You can also get the location of the panic if available
     if let Some(location) = panic_info.location() {
@@ -45,11 +44,11 @@ pub extern "system" fn Java_com_github_erfur_lasso_InjectorService_initLasso<'lo
     mut _env: JNIEnv<'local>,
     _class: JClass<'local>,
 ) {
-    android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
     debug!("init logger");
+    android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
 
-    set_panic_handler();
     debug!("init panic");
+    set_panic_handler();
 }
 
 #[no_mangle]
@@ -60,11 +59,19 @@ pub extern "system" fn Java_com_github_erfur_lasso_InjectorService_injectCode<'l
     pid: jint,
     file_path: JString<'local>,
 ) {
-    let pid: i32 = pid as i32;
     debug!("pid: {}", pid);
 
     let file_path_str: String = _env.get_string(&file_path).unwrap().into();
     debug!("file_path: {}", file_path_str);
 
-    inject_code_to_pid(pid, file_path_str);
+    linjector_rs::Injector::new(pid)
+        .unwrap()
+        .use_raw_dlopen()
+        .unwrap()
+        .set_file_path(file_path_str)
+        .unwrap()
+        .set_default_syms()
+        .unwrap()
+        .inject()
+        .unwrap();
 }
