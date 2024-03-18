@@ -20,4 +20,4 @@ log = "0.4.20"
 nix = { version = "0.27.1", features = ["uio"] }
 pretty-hex = "0.4.0"
 proc-maps = "0.3.2"
-linjector-rs = { path = "../linjector-rs" }
+linjector-rs = { git = "https://github.com/erfur/linjector-rs.git", branch = "main" }
