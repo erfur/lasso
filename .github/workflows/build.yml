@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+    tags:
+      - "v*"
+  pull_request:
+    branches: ["main"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: build app
+        run: ./gradlew build
+
+      - name: move files
+        run: |
+          mv app/build/outputs/apk/debug/app-debug.apk lasso.apk
+
+      - name: save hashes in env
+        run: |
+          echo '```' > hashes.txt
+          echo "SHA256 hashes:" >> hashes.txt
+          sha256sum lasso.apk >> hashes.txt
+          echo '```' >> hashes.txt
+
+      - name: release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          body_path: hashes.txt
+          files: |
+            ./lasso.apk
