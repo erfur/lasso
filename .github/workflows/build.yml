@@ -20,6 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
+          distribution: "oracle"
           java-version: "17"
 
       - name: build app
