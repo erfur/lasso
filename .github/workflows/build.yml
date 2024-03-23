@@ -23,6 +23,12 @@ jobs:
           distribution: "oracle"
           java-version: "17"
 
+      - name: set up cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: set up aarch64 target
+        run: rustup target add aarch64-linux-android
+
       - name: build app
         run: ./gradlew build
 
