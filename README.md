@@ -1,4 +1,5 @@
 ![img](assets/banner.png)
 
-This is an Android port of [linux-injector](https://github.com/namazso/linux_injector) implemented in Rust.
+A PoC application that uses [linjector-rs](https://github.com/erfur/linjector-rs) to inject code into applications.
 
+![](assets/ui.png)
